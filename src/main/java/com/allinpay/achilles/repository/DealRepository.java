@@ -10,4 +10,6 @@ public interface DealRepository extends ReactiveMongoRepository<Deal, String> {
 
     Mono<Deal> findByReqSn(String reqSn);
 
+    Mono<Deal> findByReqSnAndTranType(String reqSn, String tranType);
+
 }

@@ -29,6 +29,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +43,8 @@ public class QRCodeController {
     private DealService service;
     @Autowired
     private MerchantConfigService configService;
+    @Autowired
+    private DealService dealService;
     private static final int QR_CODE_IMG_SIDE_LENGTH = 160;
     private static final String QR_CODE_FORMAT = "png";
 
@@ -129,10 +133,56 @@ public class QRCodeController {
     @ResponseBody
     public Mono<String> notice(QRCodeNotice notice){
         logger.info("接收到二维码支付通知");
-        //查询交易是否存在
-        //交易状态是否已设置，相同则不做任何处理
-        //不同-更新交易结果
-        return Mono.just("success");
+        return dealService.findByReqSnAndTranType(notice.getOuttrxid(), Deal.TRAN_TYPE_WECHAT)
+                .defaultIfEmpty(new Deal())
+                .flatMap(data->syncDealInfo(data, notice))
+                .flatMap(data->Mono.just("success"));
+    }
+
+    private Mono<Deal> syncDealInfo(Deal deal, QRCodeNotice notice){
+        //todo:验证签名
+        if(StringUtils.isEmpty(deal.getReqSn())){
+            deal.setReqSn(notice.getTrxid());
+        }
+        if(StringUtils.isEmpty(deal.getTranType())){
+            if("VSP501".equals(notice.getTrxcode())){
+                deal.setTranType(Deal.TRAN_TYPE_WECHAT);
+            }else{
+                deal.setTranType(Deal.TRAN_TYPE_ALIPAY);
+            }
+        }
+        if(!StringUtils.isEmpty(notice.getTrxamt())
+                && StringUtils.isEmpty(deal.getAmount())){
+            deal.setAmount(notice.getTrxamt());
+        }
+        if(StringUtils.isEmpty(deal.getTranDate())
+                && !StringUtils.isEmpty(notice.getTrxdate())){
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+            try {
+                deal.setTranDate(sdf.parse(notice.getTrxdate()));
+            }catch (ParseException ex){
+                //do nothing
+            }
+        }
+        if(!StringUtils.isEmpty(notice.getPaytime())){
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            try {
+                deal.setTranFinishDate(sdf.parse(notice.getPaytime()));
+            }catch (ParseException ex){
+                //do nothing
+            }
+        }
+        if(!StringUtils.isEmpty(notice.getChnltrxid())
+                && StringUtils.isEmpty(deal.getChannelSn())){
+            deal.setChannelSn(notice.getChnltrxid());
+        }
+        if(!StringUtils.isEmpty(notice.getCusorderid())
+                && StringUtils.isEmpty(deal.getOrderNo())){
+            deal.setOrderNo(notice.getCusorderid());
+        }
+        deal.setRetCode(notice.getTrxstatus());
+        deal.setTranStatus(Deal.SERVER_RESPONSE);
+        return dealService.save(deal);
     }
 
 }

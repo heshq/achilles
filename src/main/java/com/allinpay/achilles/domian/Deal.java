@@ -9,15 +9,19 @@ import java.util.Date;
 public class Deal {
 
     public static final String WAIT_FOR_PAY = "0";
-    public static final String TRAN_SUCCESS = "1";
+    public static final String SERVER_RESPONSE = "1";
     public static final String TRAN_FAILED = "2";
+    public static final String TRAN_TYPE_WECHAT = "0";
+    public static final String TRAN_TYPE_ALIPAY = "1";
+    public static final String TRAN_TYPE_QUICK_PAY = "2";
 
     @Id
     private String id;
     private String tranType;
     private String merchantNo;
-    private String reqSn;
-    private String channelSn;
+    private String orderNo;//商户订单号
+    private String reqSn;//通联流水号
+    private String channelSn;//渠道流水号
     private String amount;
     private Date tranDate;
     private Date tranFinishDate;
@@ -54,6 +58,14 @@ public class Deal {
 
     public void setMerchantNo(String merchantNo) {
         this.merchantNo = merchantNo;
+    }
+
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
     }
 
     public String getReqSn() {

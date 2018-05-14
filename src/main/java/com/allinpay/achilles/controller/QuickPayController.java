@@ -7,9 +7,8 @@ import com.allinpay.achilles.core.BusinessException;
 import com.allinpay.achilles.core.ErrorCode;
 import com.allinpay.achilles.core.SecurityUtil;
 import com.allinpay.achilles.core.UUIDUtil;
-import com.allinpay.achilles.domian.MerchantConfig;
-import com.allinpay.achilles.domian.Request;
-import com.allinpay.achilles.domian.User;
+import com.allinpay.achilles.domian.*;
+import com.allinpay.achilles.service.DealService;
 import com.allinpay.achilles.service.MerchantConfigService;
 import com.allinpay.achilles.service.UserService;
 import org.slf4j.Logger;
@@ -27,6 +26,8 @@ import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -44,6 +45,8 @@ public class QuickPayController {
     private MerchantConfigService configService;
     @Autowired
     private QuickPayConfig quickPayConfig;
+    @Autowired
+    private DealService dealService;
     private WebClient webClient;
     private static Logger logger = LoggerFactory.getLogger(QuickPayController.class);
 
@@ -82,12 +85,32 @@ public class QuickPayController {
                         createQuickPayRequest(data.getT2()
                                 , amountStr
                                 , data.getT1().getAllInPayId()))
-                ).flatMap(data->Mono.just(Rendering.view(Constant.LOADING_PAGE)
+                )
+                .flatMap(data->saveDealInfo(data))
+                .flatMap(data->Mono.just(Rendering.view(Constant.LOADING_PAGE)
                         .model(data)
                         .build()))
                 .switchIfEmpty(Mono.just(Rendering.view(Constant.ERROR_PAGE)
                         .modelAttribute(Constant.ERROR_MESSAGE_LABEL, "商户编码不能为空")
                         .build()));
+    }
+
+    private Mono<Map<String, String>> saveDealInfo(Map<String, String> info){
+        Deal record = new Deal();
+        record.setTranStatus(Deal.WAIT_FOR_PAY);
+        record.setOrderNo(info.get(Label.ORDER_NO));//商户订单号
+        record.setTranType(Deal.TRAN_TYPE_QUICK_PAY);
+        record.setMerchantNo(info.get(Label.MERCHANT_ID));
+        record.setAmount(info.get(Label.ORDER_AMOUNT));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        try {
+            record.setTranDate(sdf.parse(info.get(Label.ORDER_DATE_TIME)));
+        }catch (ParseException ignore){
+            //do nothing
+        }
+        return dealService
+                .save(record)
+                .flatMap(data->Mono.just(info));
     }
 
     private Mono<User> findByOpenIdAndMerchantNo(String openId, MerchantConfig merchantConfig){
@@ -190,6 +213,34 @@ public class QuickPayController {
                         return Mono.just("error");
                     }
                 });
+    }
+
+    @RequestMapping("notice")
+    public Mono<Void> notice(QuickPayNotice quickPayNotice){
+        return dealService.findByReqSnAndTranType(quickPayNotice.getOrderNo(), Deal.TRAN_TYPE_QUICK_PAY)
+                .defaultIfEmpty(new Deal())
+                .flatMap(record->{
+                    record.setTranType(Deal.TRAN_TYPE_QUICK_PAY);
+                    record.setTranStatus(Deal.SERVER_RESPONSE);
+                    record.setMerchantNo(quickPayNotice.getMerchantId());
+                    record.setOrderNo(quickPayNotice.getOrderNo());
+                    record.setReqSn(quickPayNotice.getPaymentOrderId());
+                    record.setAmount(quickPayNotice.getOrderAmount());
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMDDhhmmss");
+                    try{
+                        record.setTranDate(sdf.parse(quickPayNotice.getOrderDatetime()));
+                    }catch (ParseException ignore){
+                        //do nothing
+                    }
+                    try{
+                        record.setTranFinishDate(sdf.parse(quickPayNotice.getPayDatetime()));
+                    }catch (ParseException ignore){
+                        //do nothing
+                    }
+                    return Mono.just(record);
+                })
+                .doOnSuccess(data->dealService.save(data))
+                .flatMap(data->Mono.empty());
     }
 
 }

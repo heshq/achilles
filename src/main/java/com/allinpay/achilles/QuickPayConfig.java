@@ -42,6 +42,7 @@ public class QuickPayConfig {
     private String payUri;
     private List<String> regOrder;
     private List<String> payOrder;
+    private List<String> noticeOrder;
     private String pickupUrl;
     private String receiveUrl;
 
@@ -83,6 +84,14 @@ public class QuickPayConfig {
 
     public void setPayOrder(List<String> payOrder) {
         this.payOrder = payOrder;
+    }
+
+    public List<String> getNoticeOrder() {
+        return noticeOrder;
+    }
+
+    public void setNoticeOrder(List<String> noticeOrder) {
+        this.noticeOrder = noticeOrder;
     }
 
     public String getPickupUrl() {
