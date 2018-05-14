@@ -243,4 +243,8 @@ public class QuickPayController {
                 .flatMap(data->Mono.empty());
     }
 
+    @RequestMapping("success")
+    public Mono<String> resultPage(){
+        return Mono.just(Constant.QUICK_PAY_RESULT_PAGE);
+    }
 }

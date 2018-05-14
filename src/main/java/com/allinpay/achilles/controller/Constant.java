@@ -7,5 +7,6 @@ public interface Constant {
     String ERROR_PAGE = "errorPage";
     String ERROR_MESSAGE_LABEL = "errMsg";
     String LOADING_PAGE = "quickPayLoading";
+    String QUICK_PAY_RESULT_PAGE = "quickPayResultPage";
 
 }
