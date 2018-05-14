@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <link rel="stylesheet" href="/css/weui.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css" />
+    <script type="text/javascript" src="/js/jquery/jquery-3.3.1.min.js"></script>
+    <title>订单详情</title>
+    <script type="text/javascript">
+        function changeFormAction(url){
+            $("#payInfo").attr('action', url);
+        }
+        $(function(){
+            if($("#we-chart-pay")){
+                $("#we-chart-pay").attr("checked","checked");
+            }else{
+                $("#quick-pay").attr("checked","checked");
+            }
+        });
+    </script>
+</head>
+<body>
+<h2 class="title">{{merchantConfig.merchantName}}</h2>
+{{#errMsg}} {{errMsg}} {{/errMsg}}
+<div class="weui-cells weui-cells_form">
+<form action="/qrCode/init" id="payInfo" method='post'>
+    <div class="weui-cell">
+        <div class="weui-cell__hd"><label class="weui-label">金额</label> </div>
+        <div class="weui-cell__bd">
+            <input id="amount" name="amount" class="weui-input" type="text"/>
+        </div>
+    </div>
+    <div class="weui-cell">
+        <div class="weui-cell__hd"><label class="weui-label">备注</label> </div>
+        <div class="weui-cell__bd">
+            <input id="remark" name="remark" class="weui-input" type="text"/>
+        </div>
+    </div>
+    <input id="openId" name="openId" type="hidden" value="1"/>
+    <div class="weui-cells__title">选择付款方式</div>
+    <div class="weui-cells weui-cells_radio">
+        {{#merchantConfig.qrParameter}}
+        <label class="weui-cell weui-check__label" for="we-chart-pay">
+            <div class="weui-cell__bd">
+                <p>微信支付</p>
+            </div>
+            <div class="weui-cell__ft">
+                <input type="radio" name="pay-type" class="weui-check" id="we-chart-pay" onclick="changeFormAction('/qrCode/init')">
+                <span class="weui-icon-checked"></span>
+            </div>
+        </label>
+        {{/merchantConfig.qrParameter}}
+        {{#merchantConfig.quickPayParameter}}
+        <label class="weui-cell weui-check__label" for="quick-pay">
+            <div class="weui-cell__bd">
+                <p>快捷支付</p>
+            </div>
+            <div class="weui-cell__ft">
+                <input type="radio" name="pay-type" class="weui-check" id="quick-pay" checked="checked" onclick="changeFormAction('/quickPay/order')">
+                <span class="weui-icon-checked"></span>
+            </div>
+        </label>
+        {{/merchantConfig.quickPayParameter}}
+    </div>
+    <input id="merchantCode" name="merchantCode" type="hidden" value="{{merchantConfig.merchantCode}}" />
+</form>
+</div>
+
+<div class="weui-btn-area">
+    <a class="weui-btn weui-btn_primary" id="payNow" href="javascript:$('#payInfo').submit()" id="login">下一步</a>
+</div>
+{{>fragment/footer}}
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <link rel="stylesheet" href="/css/weui.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css" />
+    <script type="text/javascript" src="/js/jquery/jquery-3.3.1.min.js"></script>
+    <title>loading</title>
+    <script type="text/javascript">
+        $(function(){
+            $('#quickPayForm').submit();
+        });
+    </script>
+</head>
+<body>
+<div class="weui-cells weui-cells_form">
+<form action="{{payUrl}}" id="quickPayForm" method='post'>
+    <input id="inputCharset" name="inputCharset" type="hidden" value="{{inputCharset}}"/>
+    <input id="pickupUrl" name="pickupUrl" type="hidden" value="{{pickupUrl}}"/>
+    <input id="receiveUrl" name="receiveUrl" type="hidden" value="{{receiveUrl}}"/>
+    <input id="version" name="version" type="hidden" value="{{version}}"/>
+    <input id="language" name="language" type="hidden" value="{{language}}"/>
+    <input id="signType" name="signType" type="hidden" value="{{signType}}"/>
+    <input id="merchantId" name="merchantId" type="hidden" value="{{merchantId}}"/>
+    <input id="orderNo" name="orderNo" type="hidden" value="{{orderNo}}"/>
+    <input id="orderAmount" name="orderAmount" type="hidden" value="{{orderAmount}}"/>
+    <input id="orderCurrency" name="orderCurrency" type="hidden" value="{{orderCurrency}}"/>
+    <input id="orderDatetime" name="orderDatetime" type="hidden" value="{{orderDatetime}}"/>
+    <input id="payType" name="payType" type="hidden" value="{{payType}}"/>
+    <input id="ext1" name="ext1" type="hidden" value="{{ext1}}"/>
+    <input id="signMsg" name="signMsg" type="hidden" value="{{signMsg}}"/>
+</form>
+</div>
+<div class="weui-loadmore">
+    <i class="weui-loading"></i>
+    <span class="weui-loadmore__tips">正在加载</span>
+</div>
+{{>fragment/footer}}
+</body>
+</html>
