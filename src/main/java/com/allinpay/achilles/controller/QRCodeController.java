@@ -79,7 +79,7 @@ public class QRCodeController {
                             .modelAttribute("merchantConfig", data)
                             .build()));
         }
-        final Mono<Deal> deal = service.qrCodeRequest(config, request.getAmount(), request.getRemark());
+        final Mono<Deal> deal = service.qrCodeRequest(config, val, request.getRemark());
         return deal.flatMap(data->{
             if(Message.SUCCESS.equalsIgnoreCase(data.getRetCode())){
                 return Mono.just(Rendering.view(Constant.QR_CODE_PAGE)

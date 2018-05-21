@@ -34,6 +34,7 @@ public class QRCodeClient {
             message.setOrderTitle("");
             message.setValidTime("");
             message.setRemark(remark);
+            //todo:没有域名,无法接收通知
             message.setNotifyUrl("www.baidu.com");
             message.setLimitPay("");
             message.sign();

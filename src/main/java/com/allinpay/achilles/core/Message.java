@@ -52,13 +52,7 @@ public class Message extends TreeMap<String, String> {
     }
 
     public void setTranAmount(String amountStr){
-        try {
-            double amount = Double.parseDouble(amountStr);
-            amount *= 100;
-            this.put(TRAN_AMOUNT, String.valueOf(Double.valueOf(amount).intValue()));
-        }catch (NumberFormatException ex){
-            throw new BusinessException("格式化金额错误,输入金额为:" + amountStr);
-        }
+        this.put(TRAN_AMOUNT, amountStr);
     }
 
     public String getTranAmount(){
